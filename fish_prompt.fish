@@ -12,7 +12,8 @@
 # set -g theme_hide_hostname yes
 # set -g theme_hide_hostname no
 # set -g default_user your_normal_user
-
+# Modified on 8/30/20 to remove references to SVN
+# SVN calls were slowing down cd's on my shell and I don't use SVN
 
 
 set -g current_bg NONE
@@ -42,8 +43,6 @@ set -q color_git_dirty_bg; or set color_git_dirty_bg yellow
 set -q color_git_dirty_str; or set color_git_dirty_str black
 set -q color_git_bg; or set color_git_bg green
 set -q color_git_str; or set color_git_str black
-set -q color_svn_bg; or set color_svn_bg green
-set -q color_svn_str; or set color_svn_str black
 set -q color_status_nonzero_bg; or set color_status_nonzero_bg black
 set -q color_status_nonzero_str; or set color_status_nonzero_str red
 set -q color_status_superuser_bg; or set color_status_superuser_bg black
@@ -234,32 +233,6 @@ function prompt_git -d "Display the current git state"
 end
 
 
-function prompt_svn -d "Display the current svn state"
-  set -l ref
-  if command svn info >/dev/null 2>&1
-    set branch (svn_get_branch)
-    set branch_symbol \uE0A0
-    set revision (svn_get_revision)
-    prompt_segment $color_svn_bg $color_svn_str "$branch_symbol $branch:$revision"
-  end
-end
-
-function svn_get_branch -d "get the current branch name"
-  svn info 2> /dev/null | awk -F/ \
-      '/^URL:/ { \
-        for (i=0; i<=NF; i++) { \
-          if ($i == "branches" || $i == "tags" ) { \
-            print $(i+1); \
-            break;\
-          }; \
-          if ($i == "trunk") { print $i; break; } \
-        } \
-      }'
-end
-
-function svn_get_revision -d "get the current revision number"
-  svn info 2> /dev/null | sed -n 's/Revision:\ //p'
-end
 
 
 function prompt_status -d "the symbols for a non zero exit status, root and background jobs"
@@ -292,7 +265,6 @@ function fish_prompt
   if [ (cwd_in_scm_blacklist | wc -c) -eq 0 ]
     type -q hg;  and prompt_hg
     type -q git; and prompt_git
-    type -q svn; and prompt_svn
   end
   prompt_finish
 end
